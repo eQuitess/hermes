@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.security.auth.SecurityProtocol;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
@@ -49,6 +50,12 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.SEND_BUFFER_CONFI
 import static org.apache.kafka.clients.consumer.ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEY_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_PROTOCOL_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_RECEIVER_INITIAL_IDLE_TIME;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_RECEIVER_MAX_IDLE_TIME;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_ENABLED;
@@ -56,6 +63,13 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_M
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_PASSWORD;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_PROTOCOL;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_USERNAME;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_KEYSTORE_LOCATION;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_KEYSTORE_PASSWORD;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_KEY_PASSWORD;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_SECURITY_PROTOCOL;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_TRUSTSTORE_LOCATION;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_TRUSTSTORE_PASSWORD;
 
 public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
@@ -146,6 +160,17 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                             + "password=\"" + configs.getStringProperty(KAFKA_AUTHORIZATION_PASSWORD) + "\";"
             );
         }
+
+        if (configs.getBooleanProperty(KAFKA_SSL_ENABLED)) {
+            props.put(SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SSL.name);
+            props.put(SSL_PROTOCOL_CONFIG, configs.getStringProperty(KAFKA_SSL_SECURITY_PROTOCOL));
+            props.put(SSL_TRUSTSTORE_LOCATION_CONFIG, configs.getStringProperty(KAFKA_SSL_TRUSTSTORE_LOCATION));
+            props.put(SSL_TRUSTSTORE_PASSWORD_CONFIG, configs.getStringProperty(KAFKA_SSL_TRUSTSTORE_PASSWORD));
+            props.put(SSL_KEYSTORE_LOCATION_CONFIG, configs.getStringProperty(KAFKA_SSL_KEYSTORE_LOCATION));
+            props.put(SSL_KEYSTORE_PASSWORD_CONFIG, configs.getStringProperty(KAFKA_SSL_KEYSTORE_PASSWORD));
+            props.put(SSL_KEY_PASSWORD_CONFIG, configs.getStringProperty(KAFKA_SSL_KEY_PASSWORD));
+        }
+
         props.put(AUTO_OFFSET_RESET_CONFIG, configs.getStringProperty(Configs.KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG));
         props.put(SESSION_TIMEOUT_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG));
         props.put(HEARTBEAT_INTERVAL_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG));

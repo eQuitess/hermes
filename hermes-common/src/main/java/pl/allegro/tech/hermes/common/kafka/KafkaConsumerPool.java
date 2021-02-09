@@ -8,6 +8,7 @@ import com.google.common.cache.RemovalNotification;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.security.auth.SecurityProtocol;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.exception.BrokerNotFoundForPartitionException;
 
@@ -24,6 +25,12 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.RECEIVE_BUFFER_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEY_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_PROTOCOL_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG;
 
 
 /**
@@ -96,6 +103,16 @@ public class KafkaConsumerPool {
                 props.put(SASL_MECHANISM, poolConfig.getSecurityMechanism());
                 props.put(SECURITY_PROTOCOL_CONFIG, poolConfig.getSecurityProtocol());
                 props.put(SASL_JAAS_CONFIG, poolConfig.getSaslJaasConfig());
+            }
+
+            if (poolConfig.isSslEnabled()) {
+                props.put(SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SSL.name);
+                props.put(SSL_PROTOCOL_CONFIG, poolConfig.getSslProtocol());
+                props.put(SSL_TRUSTSTORE_LOCATION_CONFIG, poolConfig.getSslTruststoreLocation());
+                props.put(SSL_TRUSTSTORE_PASSWORD_CONFIG, poolConfig.getSslTruststorePassword());
+                props.put(SSL_KEYSTORE_LOCATION_CONFIG, poolConfig.getSslKeystoreLocation());
+                props.put(SSL_KEYSTORE_PASSWORD_CONFIG, poolConfig.getSslKeystorePassword());
+                props.put(SSL_KEY_PASSWORD_CONFIG, poolConfig.getSslKeyPassword());
             }
             return new KafkaConsumer<>(props);
         }

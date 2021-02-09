@@ -5,6 +5,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.security.auth.SecurityProtocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -30,6 +31,12 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZE
 import static org.apache.kafka.clients.producer.ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEY_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_PROTOCOL_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG;
 
 public class KafkaConsumerGroupManager implements ConsumerGroupManager {
 
@@ -94,10 +101,21 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
         props.put(DEFAULT_API_TIMEOUT_MS_CONFIG, 5000);
         props.put(KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer");
         props.put(VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer");
+
         if (kafkaProperties.getSasl().isEnabled()) {
             props.put(SASL_MECHANISM, kafkaProperties.getSasl().getMechanism());
             props.put(SECURITY_PROTOCOL_CONFIG, kafkaProperties.getSasl().getProtocol());
             props.put(SASL_JAAS_CONFIG, kafkaProperties.getSasl().getJaasConfig());
+        }
+
+        if (kafkaProperties.getSsl().isEnabled()) {
+            props.put(SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SSL.name);
+            props.put(SSL_PROTOCOL_CONFIG, kafkaProperties.getSsl().getProtocol());
+            props.put(SSL_TRUSTSTORE_LOCATION_CONFIG, kafkaProperties.getSsl().getTruststoreLocation());
+            props.put(SSL_TRUSTSTORE_PASSWORD_CONFIG, kafkaProperties.getSsl().getTruststorePassword());
+            props.put(SSL_KEYSTORE_LOCATION_CONFIG, kafkaProperties.getSsl().getKeystoreLocation());
+            props.put(SSL_KEYSTORE_PASSWORD_CONFIG, kafkaProperties.getSsl().getKeystorePassword());
+            props.put(SSL_KEY_PASSWORD_CONFIG, kafkaProperties.getSsl().getKeyPassword());
         }
         return props;
     }

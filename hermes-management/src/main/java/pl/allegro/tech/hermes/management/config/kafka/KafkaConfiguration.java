@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.config.kafka;
 
 import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.common.security.auth.SecurityProtocol;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -49,6 +50,12 @@ import static org.apache.kafka.clients.CommonClientConfigs.REQUEST_TIMEOUT_MS_CO
 import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEY_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_PROTOCOL_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG;
 
 @Configuration
 @EnableConfigurationProperties(KafkaClustersProperties.class)
@@ -164,7 +171,14 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                 kafkaProperties.getSasl().isEnabled(),
                 kafkaProperties.getSasl().getMechanism(),
                 kafkaProperties.getSasl().getProtocol(),
-                kafkaProperties.getSasl().getJaasConfig());
+                kafkaProperties.getSasl().getJaasConfig(),
+                kafkaProperties.getSsl().isEnabled(),
+                kafkaProperties.getSsl().getProtocol(),
+                kafkaProperties.getSsl().getTruststoreLocation(),
+                kafkaProperties.getSsl().getTruststorePassword(),
+                kafkaProperties.getSsl().getKeystoreLocation(),
+                kafkaProperties.getSsl().getKeystorePassword(),
+                kafkaProperties.getSsl().getKeyPassword());
 
         return new KafkaConsumerPool(config, brokerStorage, configuredBootstrapServers);
     }
@@ -174,10 +188,21 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
         props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapKafkaServer());
         props.put(SECURITY_PROTOCOL_CONFIG, DEFAULT_SECURITY_PROTOCOL);
         props.put(REQUEST_TIMEOUT_MS_CONFIG, kafkaProperties.getKafkaServerRequestTimeoutMillis());
+
         if (kafkaProperties.getSasl().isEnabled()) {
             props.put(SASL_MECHANISM, kafkaProperties.getSasl().getMechanism());
             props.put(SECURITY_PROTOCOL_CONFIG, kafkaProperties.getSasl().getProtocol());
             props.put(SASL_JAAS_CONFIG, kafkaProperties.getSasl().getJaasConfig());
+        }
+
+        if (kafkaProperties.getSsl().isEnabled()) {
+            props.put(SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SSL.name);
+            props.put(SSL_PROTOCOL_CONFIG, kafkaProperties.getSsl().getProtocol());
+            props.put(SSL_TRUSTSTORE_LOCATION_CONFIG, kafkaProperties.getSsl().getTruststoreLocation());
+            props.put(SSL_TRUSTSTORE_PASSWORD_CONFIG, kafkaProperties.getSsl().getTruststorePassword());
+            props.put(SSL_KEYSTORE_LOCATION_CONFIG, kafkaProperties.getSsl().getKeystoreLocation());
+            props.put(SSL_KEYSTORE_PASSWORD_CONFIG, kafkaProperties.getSsl().getKeystorePassword());
+            props.put(SSL_KEY_PASSWORD_CONFIG, kafkaProperties.getSsl().getKeyPassword());
         }
         return AdminClient.create(props);
     }

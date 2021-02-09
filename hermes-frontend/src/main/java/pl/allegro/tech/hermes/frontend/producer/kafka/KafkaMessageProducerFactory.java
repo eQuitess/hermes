@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.frontend.producer.kafka;
 import com.google.common.collect.ImmutableMap;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.common.security.auth.SecurityProtocol;
 import org.glassfish.hk2.api.Factory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -31,6 +32,12 @@ import static org.apache.kafka.clients.producer.ProducerConfig.SEND_BUFFER_CONFI
 import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEY_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_PROTOCOL_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_MECHANISM;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_PASSWORD;
@@ -49,6 +56,13 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_REQUES
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_RETRIES;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_RETRY_BACKOFF_MS;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_TCP_SEND_BUFFER;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_KEYSTORE_LOCATION;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_KEYSTORE_PASSWORD;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_KEY_PASSWORD;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_SECURITY_PROTOCOL;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_TRUSTSTORE_LOCATION;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_TRUSTSTORE_PASSWORD;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_BUFFERED_STORAGE_SIZE;
 
 public class KafkaMessageProducerFactory implements Factory<Producers> {
@@ -90,6 +104,16 @@ public class KafkaMessageProducerFactory implements Factory<Producers> {
                             + "username=\"" + getString(KAFKA_AUTHORIZATION_USERNAME) + "\"\n"
                             + "password=\"" + getString(KAFKA_AUTHORIZATION_PASSWORD) + "\";"
             );
+        }
+
+        if (getBoolean(KAFKA_SSL_ENABLED)) {
+            props.put(SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SSL.name);
+            props.put(SSL_PROTOCOL_CONFIG, getString(KAFKA_SSL_SECURITY_PROTOCOL));
+            props.put(SSL_TRUSTSTORE_LOCATION_CONFIG, getString(KAFKA_SSL_TRUSTSTORE_LOCATION));
+            props.put(SSL_TRUSTSTORE_PASSWORD_CONFIG, getString(KAFKA_SSL_TRUSTSTORE_PASSWORD));
+            props.put(SSL_KEYSTORE_LOCATION_CONFIG, getString(KAFKA_SSL_KEYSTORE_LOCATION));
+            props.put(SSL_KEYSTORE_PASSWORD_CONFIG, getString(KAFKA_SSL_KEYSTORE_PASSWORD));
+            props.put(SSL_KEY_PASSWORD_CONFIG, getString(KAFKA_SSL_KEY_PASSWORD));
         }
 
         Producer<byte[], byte[]> leaderConfirms = new KafkaProducer<>(copyWithEntryAdded(props, ACKS_CONFIG, ACK_LEADER));

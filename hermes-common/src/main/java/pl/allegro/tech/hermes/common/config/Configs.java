@@ -92,6 +92,14 @@ public enum Configs {
     KAFKA_AUTHORIZATION_USERNAME("kafka.authorization.username", "username"),
     KAFKA_AUTHORIZATION_PASSWORD("kafka.authorization.password", "password"),
 
+    KAFKA_SSL_ENABLED("kafka.ssl.enabled", false),
+    KAFKA_SSL_SECURITY_PROTOCOL("kafka.ssl.security.protocol", "TLS"),
+    KAFKA_SSL_TRUSTSTORE_LOCATION("kafka.ssl.truststore.location", "/truststore.jks"),
+    KAFKA_SSL_TRUSTSTORE_PASSWORD("kafka.ssl.truststore.password", "password"),
+    KAFKA_SSL_KEYSTORE_LOCATION("kafka.ssl.keystore.location", "/keystore.jks"),
+    KAFKA_SSL_KEYSTORE_PASSWORD("kafka.ssl.keystore.password", "password"),
+    KAFKA_SSL_KEY_PASSWORD("kafka.ssl.key.password", "password"),
+
     FRONTEND_PORT("frontend.port", 8080),
     FRONTEND_HOST("frontend.host", "0.0.0.0"),
     FRONTEND_IDLE_TIMEOUT("frontend.idle.timeout", 65),
